@@ -1,0 +1,15 @@
+syntax = "proto3";
+package api;
+
+message Empty {
+
+}
+
+message Status {
+  bool ready = 1;
+  bool done = 2;
+}
+
+service Controller {
+  rpc IsReady(Empty) returns (Status) {}
+}

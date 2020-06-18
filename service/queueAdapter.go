@@ -6,6 +6,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
+type IPublisher interface {
+	Publish(body []byte, priority uint8, queueName string)
+}
+
 type QueueAdapter struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel

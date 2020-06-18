@@ -1,30 +1,7 @@
 package main
 
-import "time"
-
 const NoPriority = "no_priority"
 const QueueTime = "queue_time"
-
-func (msg *Message) Received() {
-	msg.Traces = append(msg.Traces, Trace{})
-	msg.Traces[len(msg.Traces)-1].ReceivedAt = time.Now().UnixNano()
-	if len(msg.Traces) > 1 {
-		msg.Traces[len(msg.Traces)-1].QueueDuration = msg.Traces[len(msg.Traces)-1].ReceivedAt - msg.Traces[len(msg.Traces)-2].PublishedAt
-		msg.Traces[len(msg.Traces)-1].QueueDuration /= 1000000
-	}
-}
-
-func (msg *Message) StartedProcessing() {
-	msg.Traces[len(msg.Traces)-1].ProcessingStartedAt = time.Now().UnixNano()
-}
-
-func (msg *Message) FinishedProcessing() {
-	msg.Traces[len(msg.Traces)-1].FinishedProcessingAt = time.Now().UnixNano()
-}
-
-func (msg *Message) Published() {
-	msg.Traces[len(msg.Traces)-1].PublishedAt = time.Now().UnixNano()
-}
 
 func (msg *Message) SetPriority(strategy string) {
 	if strategy == NoPriority {
