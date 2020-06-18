@@ -6,10 +6,16 @@ message Empty {
 }
 
 message Status {
-  bool ready = 1;
-  bool done = 2;
+  string status = 1;
+}
+
+message LoadGeneratorConfig {
+  int32 rate = 1;
+  int32 duration = 2;
 }
 
 service Controller {
-  rpc IsReady(Empty) returns (Status) {}
+  rpc GetStatus(Empty) returns (Status) {}
+  rpc Start(Empty) returns (Status) {}
+  rpc Stop(Empty) returns (Status) {}
 }

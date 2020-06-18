@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	StartService()
+	InitializeBasedOnRoles()
 	// const amqpURL = "amqp://guest:guest@localhost:5672/"
 	// const targetQueue = "targetQueue"
 	// const sourceQueue = "sourceQueue"

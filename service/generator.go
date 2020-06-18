@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -16,6 +17,7 @@ type LoadGenerator struct {
 	Done      chan bool
 	WG        sync.WaitGroup
 	Publisher IPublisher
+	status    string
 }
 
 // NewLoadGenerator Construct new LoadGenerator
@@ -26,6 +28,7 @@ func NewLoadGenerator(rate, duration int, publisher IPublisher) *LoadGenerator {
 		Done:      make(chan bool),
 		WG:        sync.WaitGroup{},
 		Publisher: publisher,
+		status:    "NOT_READY",
 	}
 	return lg
 }
@@ -33,19 +36,21 @@ func NewLoadGenerator(rate, duration int, publisher IPublisher) *LoadGenerator {
 func (l *LoadGenerator) NewRequest() {
 	msg := l.makeRequest()
 
+	msg.SetPriority(NoPriority)
+
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(fmt.Errorf("problem while marshaling a message: %w", err))
 	}
-	fmt.Println(string(b))
+	// fmt.Println(string(b))
 
-	// l.Publisher.Publish()
+	l.Publisher.Publish(b, msg.Priorities[len(msg.Priorities)-1], os.Getenv("TARGET_QUEUE"))
 }
 
-// StartGenerator prepares the load generator. rate is the number of requests per second and duration is in seconds
-func (l *LoadGenerator) StartGenerator() {
+// StartGenerator prepares the load generator. rate is the number of requests per second and duration is in seconds (for controlable)
+func (l *LoadGenerator) Start() string {
 	time.AfterFunc(time.Second*time.Duration(l.Duration), func() {
-		l.StopGenerator()
+		l.Stop()
 	})
 
 	l.WG.Add(1)
@@ -63,13 +68,18 @@ func (l *LoadGenerator) StartGenerator() {
 	}()
 
 	l.WG.Wait()
+	return "Done"
 }
 
-// StopGenerator stops generator
-func (l *LoadGenerator) StopGenerator() {
+// StopGenerator stops generator (for controlable)
+func (l *LoadGenerator) Stop() string {
 	l.Done <- true
-	l.WG.Done()
+	return "Done"
+}
 
+// GetStatus returns the status of the controlable
+func (l *LoadGenerator) GetStatus() string {
+	return l.status
 }
 
 // make a new Request and return it as a message
@@ -88,33 +98,3 @@ func (l *LoadGenerator) makeRequest() *Message {
 
 	return m
 }
-
-// func main() {
-// 	const rate = 5     // rate per second
-// 	const duration = 1 //seconds
-// 	requests = make([]int64, 0)
-
-// 	done := make(chan bool)
-
-// 	wg := sync.WaitGroup{}
-// 	wg.Add(1)
-// 	go func() {
-// 		for {
-// 			select {
-// 			case <-done:
-// 				wg.Done()
-// 				return
-// 			default:
-// 				go makeRequest()
-// 			}
-// 			time.Sleep(time.Duration(1e9 / rate))
-// 		}
-// 	}()
-
-// 	wg.Wait()
-// 	diffs := make([]int64, len(requests)-1)
-// 	for i := 1; i < len(requests); i++ {
-// 		diffs[i-1] = (requests[i] - requests[i-1]) / 1000000
-// 	}
-// 	fmt.Println(mean(diffs), len(requests))
-// }

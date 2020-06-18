@@ -61,17 +61,17 @@ func (q *QueueAdapter) Publish(body []byte, priority uint8, queueName string) {
 
 func (q *QueueAdapter) Consume(queueName string, handler chan<- []byte) {
 	msgs, err := q.Channel.Consume(
-		q.Queues[queueName].Name, // queue
-		"",                       // consumer
-		true,                     // auto-ack
-		false,                    // exclusive
-		false,                    // no-local
-		false,                    // no-wait
-		nil,                      // args
+		queueName, // queue
+		"",        // consumer
+		true,      // auto-ack
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // args
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	q.Done = make(chan bool)
+	// q.Done = make(chan bool)
 
 	go func() {
 		for d := range msgs {
@@ -79,7 +79,7 @@ func (q *QueueAdapter) Consume(queueName string, handler chan<- []byte) {
 		}
 	}()
 
-	<-q.Done
+	// <-q.Done
 
 }
 
