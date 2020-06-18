@@ -10,6 +10,7 @@ type IPublisher interface {
 	Publish(body []byte, priority uint8, queueName string)
 }
 
+// QueueAdapter contains information to connect to amqp
 type QueueAdapter struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel

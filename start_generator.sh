@@ -7,5 +7,6 @@ export AMQP_URL=amqp://guest:guest@localhost:5672/
 export ROLE=GENERATOR
 export TARGET_QUEUE=QUEUE_A
 export DURATION=15
-export RATE=10
+export RATE=1
+export DEBUG=FALSE
 ./main.out

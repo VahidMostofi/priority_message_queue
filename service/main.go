@@ -2,7 +2,7 @@ package main
 
 func main() {
 	InitializeBasedOnRoles()
-	// const amqpURL = "amqp://guest:guest@localhost:5672/"
+	// const amqpURL = "_U"
 	// const targetQueue = "targetQueue"
 	// const sourceQueue = "sourceQueue"
 	// queueAdapter := NewQueueAdapter(amqpURL)

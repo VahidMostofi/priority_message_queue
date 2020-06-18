@@ -15,6 +15,7 @@ import (
 
 var queueAdapter *QueueAdapter
 var loadGenerator *LoadGenerator
+var serviceProvider *ServiceProvider
 var manager *Manager
 var waitController sync.WaitGroup
 
@@ -32,7 +33,7 @@ func prepareGenerator() {
 }
 
 func prepareServiceProvider() {
-
+	serviceProvider = NewServiceProvider(queueAdapter)
 }
 
 func prepareManager() {
@@ -85,12 +86,9 @@ func InitializeBasedOnRoles() {
 		prepareGenerator()
 		prepareController(loadGenerator)
 	} else if os.Getenv("ROLE") == "SERVICE" {
-		targetQueue := os.Getenv("TARGET_QUEUE")
-		queueAdapter.CreateQueue(targetQueue)
-		//TODO needs the source queue
 
 		prepareServiceProvider()
-		prepareController(loadGenerator) //TODO must be service provider
+		prepareController(serviceProvider)
 	} else if os.Getenv("ROLE") == "MANAGER" {
 		finalQueue := os.Getenv("Final_QUEUE")
 		queueAdapter.CreateQueue(finalQueue)

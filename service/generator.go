@@ -12,42 +12,49 @@ import (
 
 // LoadGenerator type
 type LoadGenerator struct {
-	Rate      int
-	Duration  int
-	Done      chan bool
-	WG        sync.WaitGroup
-	Publisher IPublisher
-	status    string
+	Rate        int
+	Duration    int
+	Done        chan bool
+	WG          sync.WaitGroup
+	TargetQueue string
+	Publisher   IPublisher
+	status      string
 }
 
 // NewLoadGenerator Construct new LoadGenerator
 func NewLoadGenerator(rate, duration int, publisher IPublisher) *LoadGenerator {
 	lg := &LoadGenerator{
-		Rate:      rate,
-		Duration:  duration,
-		Done:      make(chan bool),
-		WG:        sync.WaitGroup{},
-		Publisher: publisher,
-		status:    "NOT_READY",
+		Rate:        rate,
+		Duration:    duration,
+		Done:        make(chan bool),
+		WG:          sync.WaitGroup{},
+		Publisher:   publisher,
+		status:      "NOT_READY",
+		TargetQueue: os.Getenv("TARGET_QUEUE"),
 	}
 	return lg
 }
 
+// NewRequest ...
 func (l *LoadGenerator) NewRequest() {
 	msg := l.makeRequest()
+	msg.Received()
 
 	msg.SetPriority(NoPriority)
-
+	msg.Published()
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(fmt.Errorf("problem while marshaling a message: %w", err))
 	}
-	// fmt.Println(string(b))
 
-	l.Publisher.Publish(b, msg.Priorities[len(msg.Priorities)-1], os.Getenv("TARGET_QUEUE"))
+	if os.Getenv("DEBUG") == "TRUE" {
+		fmt.Println(os.Getenv("ROLE"), "Published", msg.ID)
+	}
+
+	l.Publisher.Publish(b, msg.Priorities[len(msg.Priorities)-1], l.TargetQueue)
 }
 
-// StartGenerator prepares the load generator. rate is the number of requests per second and duration is in seconds (for controlable)
+// Start prepares the load generator. rate is the number of requests per second and duration is in seconds (for controlable)
 func (l *LoadGenerator) Start() string {
 	time.AfterFunc(time.Second*time.Duration(l.Duration), func() {
 		l.Stop()
@@ -89,7 +96,7 @@ func (l *LoadGenerator) makeRequest() *Message {
 		panic(fmt.Errorf("can create new random uuid: %w", e))
 	}
 	m := &Message{
-		Data:       7,
+		Data:       6700417,
 		ID:         t.String(),
 		Traces:     make([]Trace, 0),
 		Priorities: make([]uint8, 0),
