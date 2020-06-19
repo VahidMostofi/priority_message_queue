@@ -1,0 +1,124 @@
+version: "3"
+
+services:
+  manager:
+    container_name: manager
+    build: "service"
+    image: vahidmostofi/priority_message_queue
+    restart: on-failure
+    depends_on:
+      - serviceB
+    environment:
+      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
+      - ROLE=MANAGER
+      - LOAD_GENERATOR_URL=loadgenerator
+      - API_PORT=7789
+      - FINAL_QUEUE=QUEUE_C
+      - DURATION=15
+      - RATE=1
+      - DEBUG=FALSE
+      - GOMAXPROCS=2
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 3G
+        reservations:
+          cpus: "1"
+          memory: 1G
+################################################
+  serviceA:
+    container_name: serviceA
+    build: "service"
+    image: vahidmostofi/priority_message_queue
+    restart: on-failure
+    depends_on:
+      - loadgenerator
+    # ports:
+    #   - 7789:7789
+    environment:
+      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
+      - ROLE=SERVICE
+      - API_PORT=7789
+      - TARGET_QUEUE=QUEUE_B
+      - SOURCE_QUEUE=QUEUE_A
+      - WORK_WEIGHT=2
+      - DEBUG=FALSE
+      - GOMAXPROCS=2
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 3G
+        reservations:
+          cpus: "1"
+          memory: 1G
+################################################
+  serviceB:
+    container_name: serviceB
+    build: "service"
+    image: vahidmostofi/priority_message_queue
+    restart: on-failure
+    depends_on:
+      - loadgenerator
+    # ports:
+    #   - 7789:7789
+    environment:
+      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
+      - ROLE=SERVICE
+      - API_PORT=7789
+      - TARGET_QUEUE=QUEUE_C
+      - SOURCE_QUEUE=QUEUE_B
+      - WORK_WEIGHT=2
+      - DEBUG=FALSE
+      - GOMAXPROCS=2
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 3G
+        reservations:
+          cpus: "1"
+          memory: 1G
+################################################
+  loadgenerator:
+    container_name: loadgenerator
+    build: "service"
+    image: vahidmostofi/priority_message_queue
+    restart: on-failure
+    depends_on:
+      - amqp
+    ports:
+      - 7789:7789
+    environment:
+      - API_PORT=7789
+      - AMQP_URL=amqp://guest:guest@amqp:5672/
+      - ROLE=GENERATOR
+      - TARGET_QUEUE=QUEUE_A
+      - DURATION=15
+      - RATE=1
+      - DEBUG=FALSE        
+      - GOMAXPROCS=2
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 3G
+        reservations:
+          cpus: "1"
+          memory: 1G
+################################################
+  amqp:
+    image: rabbitmq:3-management-alpine
+    container_name: amqp
+    # volumes:
+    #     - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+    #     - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+    #     - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    ports:
+        - 5672:5672
+        - 15672:15672
