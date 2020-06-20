@@ -1,8 +1,8 @@
-Dcokersize the application
-Wire more services together(at least 2 services)
-Computer More Stats in manager
-Change Priority Settings using env
-Make Applying configurations easy by generating Docker-Compose file
-Compare With/Without Priority
-Evaluate how good is static priority settings
-Find a dynamic approach for priorotize
+[X] Dcokersize the application
+[X] Wire more services together(at least 2 services)
+[ ] Computer More Stats in manager
+[ ] Change Priority Settings using env
+[ ] Make Applying configurations easy by generating Docker-Compose file
+[ ] Compare With/Without Priority
+[ ] Evaluate how good is static priority settings
+[ ] Find a dynamic approach for prioritizing
