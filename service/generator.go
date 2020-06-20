@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -12,13 +13,14 @@ import (
 
 // LoadGenerator type
 type LoadGenerator struct {
-	Rate        int
-	Duration    int
-	Done        chan bool
-	WG          sync.WaitGroup
-	TargetQueue string
-	Publisher   IPublisher
-	status      string
+	Rate           int
+	Duration       int
+	Done           chan bool
+	WG             sync.WaitGroup
+	TargetQueue    string
+	Publisher      IPublisher
+	status         string
+	GeneratedCount int
 }
 
 // NewLoadGenerator Construct new LoadGenerator
@@ -47,39 +49,48 @@ func (l *LoadGenerator) NewRequest() {
 		panic(fmt.Errorf("problem while marshaling a message: %w", err))
 	}
 
-	if os.Getenv("DEBUG") == "TRUE" {
-		fmt.Println(os.Getenv("ROLE"), "Published", msg.ID)
-	}
-
 	l.Publisher.Publish(b, msg.Priorities[len(msg.Priorities)-1], l.TargetQueue)
+	l.GeneratedCount++
+
+	if os.Getenv("DEBUG") == "TRUE" {
+		fmt.Println(l.GeneratedCount, os.Getenv("ROLE"), "Published", msg.ID)
+	}
 }
 
 // Start prepares the load generator. rate is the number of requests per second and duration is in seconds (for controlable)
 func (l *LoadGenerator) Start() string {
-	time.AfterFunc(time.Second*time.Duration(l.Duration), func() {
-		l.Stop()
-	})
+	// if I stop this using time, it may not generat all messages!
+	// time.AfterFunc(time.Second*time.Duration(l.Duration), func() {
+	// 	l.Stop()
+	// })
 
 	l.WG.Add(1)
 	go func() {
 		for {
 			select {
 			case <-l.Done:
+				log.Println("donning watgroup")
 				l.WG.Done()
 				return
 			default:
-				go l.NewRequest()
+				if l.GeneratedCount == l.Rate*l.Duration {
+					go l.Stop()
+				} else {
+					go l.NewRequest()
+				}
 			}
 			time.Sleep(time.Duration(1e9 / l.Rate))
 		}
 	}()
 
 	l.WG.Wait()
+	log.Println("Start method is existing...")
 	return "Done"
 }
 
-// StopGenerator stops generator (for controlable)
+// Stop stops generator (for controlable)
 func (l *LoadGenerator) Stop() string {
+	log.Println("Stopping loadgenerator")
 	l.Done <- true
 	return "Done"
 }
@@ -100,7 +111,7 @@ func (l *LoadGenerator) makeRequest() *Message {
 		ID:         t.String(),
 		Traces:     make([]Trace, 0),
 		Priorities: make([]uint8, 0),
-		CreatedAt:  time.Now().UnixNano(),
+		CreatedAt:  time.Now().UnixNano() / 1000000,
 	}
 
 	return m

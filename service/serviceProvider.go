@@ -17,6 +17,8 @@ type ServiceProvider struct {
 	WorkWeight      int
 	WG              sync.WaitGroup
 	QA              *QueueAdapter
+	ReceivedCount   int
+	PublishedCount  int
 }
 
 // NewServiceProvider ...
@@ -51,6 +53,7 @@ func (s *ServiceProvider) startHandling() {
 	s.QA.Consume(s.SourceQueueName, inputChan)
 	s.Status = "READY"
 	for b := range inputChan {
+		s.ReceivedCount++
 		message := &Message{}
 		json.Unmarshal(b, message)
 		message.Received()
@@ -63,6 +66,8 @@ func (s *ServiceProvider) startHandling() {
 		}
 		message.FinishedProcessing()
 		message.SetPriority(NoPriority)
+		// message.SetPriority(QueueTime)
+		// message.SetPriority(RandomPriority)
 		message.Published()
 		b, err := json.Marshal(message)
 		if err != nil {
@@ -70,8 +75,10 @@ func (s *ServiceProvider) startHandling() {
 		}
 
 		s.QA.Publish(b, message.Priorities[len(message.Priorities)-1], s.TargetQueueName)
+		s.PublishedCount++
+
 		if os.Getenv("DEBUG") == "TRUE" {
-			fmt.Println(os.Getenv("ROLE"), "Published", message.ID)
+			fmt.Println(s.ReceivedCount, s.PublishedCount, os.Getenv("ROLE"), "Published", message.ID)
 		}
 	}
 	s.WG.Wait()

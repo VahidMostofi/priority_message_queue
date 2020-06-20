@@ -35,9 +35,10 @@ func NewQueueAdapter(amqpURL string) *QueueAdapter {
 	return queueAdapter
 }
 
+// CreateQueue ...
 func (q *QueueAdapter) CreateQueue(queueName string) {
 	var max uint8 = 9
-	args := map[string]interface{}{"x-max-priority": max}
+	args := map[string]interface{}{"x-max-priority": max, "x-max-length": 10000}
 	// A queue to send to
 	queue, err := q.Channel.QueueDeclare(
 		queueName, // name

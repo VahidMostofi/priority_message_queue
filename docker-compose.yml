@@ -14,8 +14,8 @@ services:
       - LOAD_GENERATOR_URL=loadgenerator
       - API_PORT=7789
       - FINAL_QUEUE=QUEUE_C
-      - DURATION=15
-      - RATE=1
+      - DURATION=60
+      - RATE=20
       - DEBUG=FALSE
       - GOMAXPROCS=2
     deploy:
@@ -98,8 +98,8 @@ services:
       - AMQP_URL=amqp://guest:guest@amqp:5672/
       - ROLE=GENERATOR
       - TARGET_QUEUE=QUEUE_A
-      - DURATION=15
-      - RATE=1
+      - DURATION=60
+      - RATE=20
       - DEBUG=FALSE        
       - GOMAXPROCS=2
     deploy:

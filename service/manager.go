@@ -119,6 +119,9 @@ func (m *Manager) ComputeStats() {
 			log.Println("95% of messages are consumed")
 			flag = true
 		}
+		if flag && os.Getenv("DEBUG") == "TRUE" {
+			log.Println(count)
+		}
 		if count == duration*rate {
 			break
 		}
@@ -126,7 +129,10 @@ func (m *Manager) ComputeStats() {
 
 	computeMessageCreationRate(messages)
 
-	printAll(messages)
+	// printAll(messages)
+	// PrintPercentileHistogram(messages)
+	PrintResponseTimeDetails(messages)
+	PrintPercentiles(messages)
 }
 
 func computeMessageCreationRate(messages []*Message) {
@@ -140,7 +146,7 @@ func computeMessageCreationRate(messages []*Message) {
 			min = msg.CreatedAt
 		}
 	}
-	duration := (max - min) / 1e9
+	duration := (max - min) / 1e3
 	rate := len(messages) / int(duration)
 	log.Println("Request Creation Rate is", rate)
 }

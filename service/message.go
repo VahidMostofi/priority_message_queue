@@ -46,3 +46,31 @@ func (msg *Message) FinishedProcessing() {
 func (msg *Message) Published() {
 	msg.Traces[len(msg.Traces)-1].PublishedAt = time.Now().UnixNano() / 1000000
 }
+
+// GetResponseTime returns difference between the time a request is created and the time it is published to the last queue
+func (msg *Message) GetResponseTime() int64 {
+	return msg.Traces[len(msg.Traces)-1].PublishedAt - msg.CreatedAt
+}
+
+// GetTotalServiceTime ...
+func (msg *Message) GetTotalServiceTime() int64 {
+
+	var total int64
+	for _, trace := range msg.Traces {
+		total += (trace.FinishedProcessingAt - trace.ProcessingStartedAt)
+	}
+	return total
+}
+
+// GetTotalQueueTime ...
+func (msg *Message) GetTotalQueueTime() int64 {
+	var total int64
+	if len(msg.Traces) <= 1 {
+		return 0
+	}
+
+	for i := 1; i < len(msg.Traces); i++ {
+		total += msg.Traces[i].ReceivedAt - msg.Traces[i-1].PublishedAt
+	}
+	return total
+}
