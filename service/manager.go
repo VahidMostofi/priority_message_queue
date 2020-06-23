@@ -131,8 +131,12 @@ func (m *Manager) ComputeStats() {
 
 	// printAll(messages)
 	// PrintPercentileHistogram(messages)
-	PrintResponseTimeDetails(messages)
-	PrintPercentiles(messages)
+	// PrintResponseTimeDetails(messages)
+	// PrintPercentiles(messages)
+
+	PrintQueueTimesStats(messages)
+	PrintServiceTimesStats(messages)
+	PrintResponseTimesStats(messages)
 }
 
 func computeMessageCreationRate(messages []*Message) {

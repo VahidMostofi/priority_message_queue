@@ -6,3 +6,4 @@
 [ ] Compare With/Without Priority
 [ ] Evaluate how good is static priority settings
 [ ] Find a dynamic approach for prioritizing
+[ ] go folder structure

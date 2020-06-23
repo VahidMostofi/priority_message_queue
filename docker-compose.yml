@@ -13,9 +13,9 @@ services:
       - ROLE=MANAGER
       - LOAD_GENERATOR_URL=loadgenerator
       - API_PORT=7789
-      - FINAL_QUEUE=QUEUE_C
+      - FINAL_QUEUE=QUEUE_E
       - DURATION=60
-      - RATE=20
+      - RATE=12
       - DEBUG=FALSE
       - GOMAXPROCS=2
     deploy:
@@ -43,9 +43,9 @@ services:
       - API_PORT=7789
       - TARGET_QUEUE=QUEUE_B
       - SOURCE_QUEUE=QUEUE_A
-      - WORK_WEIGHT=2
+      - WORK_WEIGHT=3
       - DEBUG=FALSE
-      - GOMAXPROCS=2
+      - GOMAXPROCS=3
     deploy:
       replicas: 1
       resources:
@@ -71,9 +71,65 @@ services:
       - API_PORT=7789
       - TARGET_QUEUE=QUEUE_C
       - SOURCE_QUEUE=QUEUE_B
-      - WORK_WEIGHT=2
+      - WORK_WEIGHT=3
       - DEBUG=FALSE
-      - GOMAXPROCS=2
+      - GOMAXPROCS=3
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 3G
+        reservations:
+          cpus: "1"
+          memory: 1G
+################################################
+  serviceC:
+    container_name: serviceC
+    build: "service"
+    image: vahidmostofi/priority_message_queue
+    restart: on-failure
+    depends_on:
+      - loadgenerator
+    # ports:
+    #   - 7789:7789
+    environment:
+      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
+      - ROLE=SERVICE
+      - API_PORT=7789
+      - TARGET_QUEUE=QUEUE_D
+      - SOURCE_QUEUE=QUEUE_C
+      - WORK_WEIGHT=3
+      - DEBUG=FALSE
+      - GOMAXPROCS=3
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 3G
+        reservations:
+          cpus: "1"
+          memory: 1G
+################################################
+  serviceD:
+    container_name: serviceD
+    build: "service"
+    image: vahidmostofi/priority_message_queue
+    restart: on-failure
+    depends_on:
+      - loadgenerator
+    # ports:
+    #   - 7789:7789
+    environment:
+      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
+      - ROLE=SERVICE
+      - API_PORT=7789
+      - TARGET_QUEUE=QUEUE_E
+      - SOURCE_QUEUE=QUEUE_D
+      - WORK_WEIGHT=3
+      - DEBUG=FALSE
+      - GOMAXPROCS=3
     deploy:
       replicas: 1
       resources:
@@ -99,9 +155,9 @@ services:
       - ROLE=GENERATOR
       - TARGET_QUEUE=QUEUE_A
       - DURATION=60
-      - RATE=20
+      - RATE=12
       - DEBUG=FALSE        
-      - GOMAXPROCS=2
+      - GOMAXPROCS=3
     deploy:
       replicas: 1
       resources:
