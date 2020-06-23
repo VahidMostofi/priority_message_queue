@@ -1,4 +1,16 @@
-version: "3"
+version: "3.4"
+
+x-service:
+  &service-envs
+  AMQP_URL: amqp://guest:guest@amqp:5672/ 
+  ROLE: SERVICE
+  API_PORT: 7789
+  WORK_WEIGHT: 1
+  GOMAXPROCS: 2
+x-load:
+  &load-properties
+  RATE: 17
+  DURATION: 60
 
 services:
   manager:
@@ -9,15 +21,14 @@ services:
     depends_on:
       - serviceB
     environment:
-      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
-      - ROLE=MANAGER
-      - LOAD_GENERATOR_URL=loadgenerator
-      - API_PORT=7789
-      - FINAL_QUEUE=QUEUE_E
-      - DURATION=60
-      - RATE=12
-      - DEBUG=FALSE
-      - GOMAXPROCS=2
+      AMQP_URL: amqp://guest:guest@amqp:5672/ 
+      ROLE: MANAGER
+      LOAD_GENERATOR_URL: loadgenerator
+      API_PORT: 7789
+      FINAL_QUEUE: QUEUE_E
+      <<: *load-properties
+      DEBUG: 'FALSE'
+      GOMAXPROCS: 2
     deploy:
       replicas: 1
       resources:
@@ -38,14 +49,10 @@ services:
     # ports:
     #   - 7789:7789
     environment:
-      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
-      - ROLE=SERVICE
-      - API_PORT=7789
-      - TARGET_QUEUE=QUEUE_B
-      - SOURCE_QUEUE=QUEUE_A
-      - WORK_WEIGHT=3
-      - DEBUG=FALSE
-      - GOMAXPROCS=3
+      << : *service-envs
+      TARGET_QUEUE: QUEUE_B
+      SOURCE_QUEUE: QUEUE_A
+      DEBUG: 'FALSE'
     deploy:
       replicas: 1
       resources:
@@ -66,14 +73,10 @@ services:
     # ports:
     #   - 7789:7789
     environment:
-      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
-      - ROLE=SERVICE
-      - API_PORT=7789
-      - TARGET_QUEUE=QUEUE_C
-      - SOURCE_QUEUE=QUEUE_B
-      - WORK_WEIGHT=3
-      - DEBUG=FALSE
-      - GOMAXPROCS=3
+      << : *service-envs
+      TARGET_QUEUE: QUEUE_C
+      SOURCE_QUEUE: QUEUE_B
+      DEBUG: 'FALSE'      
     deploy:
       replicas: 1
       resources:
@@ -94,14 +97,10 @@ services:
     # ports:
     #   - 7789:7789
     environment:
-      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
-      - ROLE=SERVICE
-      - API_PORT=7789
-      - TARGET_QUEUE=QUEUE_D
-      - SOURCE_QUEUE=QUEUE_C
-      - WORK_WEIGHT=3
-      - DEBUG=FALSE
-      - GOMAXPROCS=3
+      << : *service-envs
+      TARGET_QUEUE: QUEUE_D
+      SOURCE_QUEUE: QUEUE_C
+      DEBUG: 'FALSE'
     deploy:
       replicas: 1
       resources:
@@ -122,14 +121,10 @@ services:
     # ports:
     #   - 7789:7789
     environment:
-      - AMQP_URL=amqp://guest:guest@amqp:5672/ 
-      - ROLE=SERVICE
-      - API_PORT=7789
-      - TARGET_QUEUE=QUEUE_E
-      - SOURCE_QUEUE=QUEUE_D
-      - WORK_WEIGHT=3
-      - DEBUG=FALSE
-      - GOMAXPROCS=3
+      << : *service-envs
+      TARGET_QUEUE: QUEUE_E
+      SOURCE_QUEUE: QUEUE_D
+      DEBUG: 'FALSE'
     deploy:
       replicas: 1
       resources:
@@ -150,14 +145,13 @@ services:
     ports:
       - 7789:7789
     environment:
-      - API_PORT=7789
-      - AMQP_URL=amqp://guest:guest@amqp:5672/
-      - ROLE=GENERATOR
-      - TARGET_QUEUE=QUEUE_A
-      - DURATION=60
-      - RATE=12
-      - DEBUG=FALSE        
-      - GOMAXPROCS=3
+      API_PORT: 7789
+      AMQP_URL: amqp://guest:guest@amqp:5672/
+      ROLE: GENERATOR
+      TARGET_QUEUE: QUEUE_A
+      <<: *load-properties
+      DEBUG: 'FALSE'
+      GOMAXPROCS: 3
     deploy:
       replicas: 1
       resources:
