@@ -118,3 +118,35 @@ func GetResponseTimePercentile(messages []*Message, p int) int64 { //TODO: fix!
 
 	return messages[index].GetResponseTime()
 }
+
+// PrintAllQueueTimes ...
+func PrintAllQueueTimes(messages []*Message) {
+	sums := make([]int64, len(messages[0].Traces)-1)
+
+	for _, message := range messages {
+		times := message.GetEachQueueTime()
+		for j := 0; j < len(message.Traces)-1; j++ {
+			sums[j] += times[j]
+		}
+	}
+	fmt.Println("AVERAGE QUEUE TIMES FOR EACH SERVICE")
+	for i := 0; i < len(sums); i++ {
+		fmt.Println(i+1, float64(sums[i])/float64(len(messages)))
+	}
+}
+
+// PrintAllServiceTimes ...
+func PrintAllServiceTimes(messages []*Message) {
+	sums := make([]int64, len(messages[0].Traces))
+
+	for _, message := range messages {
+		times := message.GetEachServiceTime()
+		for j := 0; j < len(message.Traces); j++ {
+			sums[j] += times[j]
+		}
+	}
+	fmt.Println("AVERAGE SERVICE TIMES FOR EACH SERVICE")
+	for i := 0; i < len(sums); i++ {
+		fmt.Println(i+1, float64(sums[i])/float64(len(messages)))
+	}
+}

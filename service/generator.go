@@ -92,6 +92,7 @@ func (l *LoadGenerator) Start() string {
 				}
 			}
 			interval := int64(1000.0 * (rand.ExpFloat64() / float64(l.ArrivalRate)))
+			// fmt.Println(interval)
 			time.Sleep(time.Duration(interval) * time.Millisecond)
 		}
 	}()

@@ -74,3 +74,33 @@ func (msg *Message) GetTotalQueueTime() int64 {
 	}
 	return total
 }
+
+// GetEachQueueTime returns the queue time for each service
+func (msg *Message) GetEachQueueTime() []int64 {
+	times := make([]int64, len(msg.Traces)-1)
+
+	if len(msg.Traces) <= 1 {
+		return times
+	}
+
+	for i := 1; i < len(msg.Traces); i++ {
+		times[i-1] = msg.Traces[i].QueueDuration
+	}
+
+	return times
+}
+
+// GetEachServiceTime returns the queue time for each service
+func (msg *Message) GetEachServiceTime() []int64 {
+	times := make([]int64, len(msg.Traces))
+
+	if len(msg.Traces) <= 1 {
+		return times
+	}
+
+	for i := 1; i < len(msg.Traces); i++ {
+		times[i] = msg.Traces[i].FinishedProcessingAt - msg.Traces[i].ProcessingStartedAt
+	}
+
+	return times
+}

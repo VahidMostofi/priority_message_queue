@@ -137,6 +137,9 @@ func (m *Manager) ComputeStats() {
 	PrintQueueTimesStats(messages)
 	PrintServiceTimesStats(messages)
 	PrintResponseTimesStats(messages)
+
+	PrintAllQueueTimes(messages)
+	PrintAllServiceTimes(messages)
 }
 
 func computeMessageCreationRate(messages []*Message) {

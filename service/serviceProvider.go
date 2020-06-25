@@ -64,9 +64,11 @@ func (s *ServiceProvider) startHandling() {
 		}
 		message.StartedProcessing()
 		duration := int64(1000.0 * (rand.ExpFloat64() / float64(s.ServiceRate)))
+		// start := time.Now().Nanosecond()
 		end := time.Now().Add(time.Millisecond * time.Duration(duration))
 		for time.Now().Before(end) {
 		}
+		// fmt.Println(duration, time.Now().Nanosecond()-start)
 		message.FinishedProcessing()
 		message.SetPriority(os.Getenv("PRIORITY_STRATEGY"))
 		message.Published()

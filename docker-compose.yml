@@ -9,7 +9,7 @@ x-service:
   API_PORT: 7789
   SERVICE_RATE: 25
   GOMAXPROCS: 1
-  PRIORITY_STRATEGY: 'random'
+  PRIORITY_STRATEGY: 'no_priority'
 x-load:
   &load-properties
   ARRIVAL_RATE: 20

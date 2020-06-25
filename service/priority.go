@@ -18,30 +18,16 @@ func (msg *Message) SetPriority(strategy string) {
 		msg.Priorities = append(msg.Priorities, priority)
 	} else if strategy == QueueTime {
 		if len(msg.Traces) > 1 {
-			for i := 1; i < len(msg.Traces); i++ {
-				queueDuration += msg.Traces[i].QueueDuration
+			if len(msg.Traces) == 3 {
+				if msg.Traces[len(msg.Traces)-1].QueueDuration > 40 {
+					priority = 2
+					fmt.Println("PRIORITY 2")
+				} else {
+					priority = 1
+					fmt.Println("PRIORITY 1")
+				}
 			}
-			if queueDuration <= 160*1 {
-				priority = 0
-			} else if queueDuration <= 160*2 {
-				priority = 1
-			} else if queueDuration <= 160*3 {
-				priority = 2
-			} else if queueDuration <= 160*4 {
-				priority = 3
-			} else if queueDuration <= 160*5 {
-				priority = 4
-			} else if queueDuration <= 160*6 {
-				priority = 5
-			} else if queueDuration <= 160*7 {
-				priority = 6
-			} else if queueDuration <= 160*8 {
-				priority = 7
-			} else if queueDuration <= 160*9 {
-				priority = 8
-			} else {
-				priority = 9
-			}
+
 		} else {
 			priority = 0
 		}
