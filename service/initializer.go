@@ -20,15 +20,15 @@ var manager *Manager
 var waitController sync.WaitGroup
 
 func prepareGenerator() {
-	duration, err := strconv.Atoi(os.Getenv("DURATION"))
+	reqCount, err := strconv.Atoi(os.Getenv("REQ_COUNT"))
 	if err != nil {
-		panic(fmt.Errorf("can't convert DURATION: '%s' to int", os.Getenv("DURATION")))
+		panic(fmt.Errorf("can't convert REQ_COUNT: '%s' to int", os.Getenv("REQ_COUNT")))
 	}
-	rate, err := strconv.Atoi(os.Getenv("RATE"))
+	arrivalRate, err := strconv.Atoi(os.Getenv("ARRIVAL_RATE"))
 	if err != nil {
-		panic(fmt.Errorf("can't convert RATE: '%s' to int", os.Getenv("RATE")))
+		panic(fmt.Errorf("can't convert ARRIVAL_RATE: '%s' to int", os.Getenv("ARRIVAL_RATE")))
 	}
-	loadGenerator = NewLoadGenerator(rate, duration, queueAdapter)
+	loadGenerator = NewLoadGenerator(arrivalRate, reqCount, queueAdapter)
 	loadGenerator.status = "READY"
 }
 

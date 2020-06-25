@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/rand"
 	"os"
 	"strconv"
 	"sync"
+	"time"
 )
 
 // ServiceProvider ...
@@ -14,7 +16,7 @@ type ServiceProvider struct {
 	Status          string
 	SourceQueueName string
 	TargetQueueName string
-	WorkWeight      int
+	ServiceRate     int
 	WG              sync.WaitGroup
 	QA              *QueueAdapter
 	ReceivedCount   int
@@ -28,7 +30,7 @@ func NewServiceProvider(qa *QueueAdapter) *ServiceProvider {
 	if len(targetQueueName) == 0 || len(sourceQueueName) == 0 {
 		panic("TARGET_QUEUE or SOURCE_QUEUE is not provided")
 	}
-	workWeight, err := strconv.Atoi(os.Getenv("WORK_WEIGHT"))
+	serviceRate, err := strconv.Atoi(os.Getenv("SERVICE_RATE"))
 	if err != nil {
 		panic(fmt.Errorf("can't convert WORK_WEIGHT: '%s' to int", os.Getenv("WORK_WEIGHT")))
 	}
@@ -36,7 +38,7 @@ func NewServiceProvider(qa *QueueAdapter) *ServiceProvider {
 		Status:          "NOT_READY",
 		SourceQueueName: sourceQueueName,
 		TargetQueueName: targetQueueName,
-		WorkWeight:      workWeight,
+		ServiceRate:     serviceRate,
 		WG:              sync.WaitGroup{},
 		QA:              qa,
 	}
@@ -61,13 +63,12 @@ func (s *ServiceProvider) startHandling() {
 			fmt.Println(os.Getenv("ROLE"), "Received", message.ID)
 		}
 		message.StartedProcessing()
-		for i := 0; i < s.WorkWeight; i++ {
-			isPrime(message.Data)
+		duration := int64(1000.0 * (rand.ExpFloat64() / float64(s.ServiceRate)))
+		end := time.Now().Add(time.Millisecond * time.Duration(duration))
+		for time.Now().Before(end) {
 		}
 		message.FinishedProcessing()
-		message.SetPriority(NoPriority)
-		// message.SetPriority(QueueTime)
-		// message.SetPriority(RandomPriority)
+		message.SetPriority(os.Getenv("PRIORITY_STRATEGY"))
 		message.Published()
 		b, err := json.Marshal(message)
 		if err != nil {

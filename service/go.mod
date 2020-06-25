@@ -3,6 +3,7 @@ module github.com/VahidMostofi/pmq/service
 go 1.13
 
 require (
+	github.com/cheggaaa/pb/v3 v3.0.4 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
 	github.com/streadway/amqp v1.0.0

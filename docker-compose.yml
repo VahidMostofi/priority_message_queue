@@ -1,16 +1,19 @@
 version: "3.4"
 
+# random, queue_time, no_priority
+
 x-service:
   &service-envs
   AMQP_URL: amqp://guest:guest@amqp:5672/ 
   ROLE: SERVICE
   API_PORT: 7789
-  WORK_WEIGHT: 1
-  GOMAXPROCS: 2
+  SERVICE_RATE: 25
+  GOMAXPROCS: 1
+  PRIORITY_STRATEGY: 'random'
 x-load:
   &load-properties
-  RATE: 17
-  DURATION: 60
+  ARRIVAL_RATE: 20
+  REQ_COUNT: 800
 
 services:
   manager:
@@ -151,6 +154,7 @@ services:
       TARGET_QUEUE: QUEUE_A
       <<: *load-properties
       DEBUG: 'FALSE'
+      PROGRESS_BAR: 'FALSE'
       GOMAXPROCS: 3
     deploy:
       replicas: 1

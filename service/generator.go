@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/google/uuid"
 )
 
 // LoadGenerator type
 type LoadGenerator struct {
-	Rate           int
-	Duration       int
+	ArrivalRate    int
+	ReqCount       int
 	Done           chan bool
 	WG             sync.WaitGroup
 	TargetQueue    string
@@ -24,10 +26,10 @@ type LoadGenerator struct {
 }
 
 // NewLoadGenerator Construct new LoadGenerator
-func NewLoadGenerator(rate, duration int, publisher IPublisher) *LoadGenerator {
+func NewLoadGenerator(arrivalRate, reqCount int, publisher IPublisher) *LoadGenerator {
 	lg := &LoadGenerator{
-		Rate:        rate,
-		Duration:    duration,
+		ArrivalRate: arrivalRate,
+		ReqCount:    reqCount,
 		Done:        make(chan bool),
 		WG:          sync.WaitGroup{},
 		Publisher:   publisher,
@@ -63,6 +65,10 @@ func (l *LoadGenerator) Start() string {
 	// time.AfterFunc(time.Second*time.Duration(l.Duration), func() {
 	// 	l.Stop()
 	// })
+	var bar *pb.ProgressBar
+	if os.Getenv("PROGRESS_BAR") == "TRUE" {
+		bar = pb.StartNew(l.ReqCount)
+	}
 
 	l.WG.Add(1)
 	go func() {
@@ -73,13 +79,20 @@ func (l *LoadGenerator) Start() string {
 				l.WG.Done()
 				return
 			default:
-				if l.GeneratedCount == l.Rate*l.Duration {
+				if l.GeneratedCount == l.ReqCount {
 					go l.Stop()
+					if bar != nil {
+						bar.Finish()
+					}
 				} else {
 					go l.NewRequest()
+					if bar != nil {
+						bar.Increment()
+					}
 				}
 			}
-			time.Sleep(time.Duration(1e9 / l.Rate))
+			interval := int64(1000.0 * (rand.ExpFloat64() / float64(l.ArrivalRate)))
+			time.Sleep(time.Duration(interval) * time.Millisecond)
 		}
 	}()
 

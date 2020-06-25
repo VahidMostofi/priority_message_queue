@@ -93,16 +93,16 @@ func (m *Manager) ComputeStats() {
 	log.Println("Consuming", os.Getenv("FINAL_QUEUE"))
 	m.QA.Consume(os.Getenv("FINAL_QUEUE"), inputChan)
 
-	duration, err := strconv.Atoi(os.Getenv("DURATION"))
+	reqCount, err := strconv.Atoi(os.Getenv("REQ_COUNT"))
 	if err != nil {
-		panic(fmt.Errorf("can't convert DURATION: '%s' to int", os.Getenv("DURATION")))
+		panic(fmt.Errorf("can't convert REQ_COUNT: '%s' to int", os.Getenv("REQ_COUNT")))
 	}
-	rate, err := strconv.Atoi(os.Getenv("RATE"))
-	if err != nil {
-		panic(fmt.Errorf("can't convert RATE: '%s' to int", os.Getenv("RATE")))
-	}
+	// rate, err := strconv.Atoi(os.Getenv("RATE"))
+	// if err != nil {
+	// 	panic(fmt.Errorf("can't convert RATE: '%s' to int", os.Getenv("RATE")))
+	// }
 
-	messages := make([]*Message, duration*rate)
+	messages := make([]*Message, reqCount)
 	count := 0
 	flag := false
 	for b := range inputChan {
@@ -115,14 +115,14 @@ func (m *Manager) ComputeStats() {
 			fmt.Println(os.Getenv("ROLE"), "Received", msg.ID)
 		}
 
-		if count > int(0.95*float32(duration*rate)) && !flag {
+		if count > int(0.95*float32(reqCount)) && !flag {
 			log.Println("95% of messages are consumed")
 			flag = true
 		}
 		if flag && os.Getenv("DEBUG") == "TRUE" {
 			log.Println(count)
 		}
-		if count == duration*rate {
+		if count == reqCount {
 			break
 		}
 	}
